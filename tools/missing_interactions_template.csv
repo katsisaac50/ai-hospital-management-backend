@@ -1,0 +1,8 @@
+"drug_a","drug_b","description","severity"
+"alcohol","aspirin","",""
+"alcohol","ibuprofen","",""
+"alcohol","warfarin","",""
+"aspirin","warfarin","",""
+"paracetamol","warfarin","",""
+ibuprofen,paracetamol,May increase kidney risk when used together,moderate
+aspirin,paracetamol,Increased bleeding risk when combined,severe

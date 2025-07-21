@@ -1,0 +1,4 @@
+"drugA","drugB","description","severity"
+"ibuprofen","aspirin","Increased risk of gastrointestinal bleeding","moderate"
+"paracetamol","alcohol","Increased risk of liver damage","severe"
+"ibuprofen","warfarin","Increased risk of bleeding","severe"
