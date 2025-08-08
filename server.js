@@ -34,8 +34,36 @@ connectDB();
 const app = express();
 
 // Enable CORS
-app.use(cors({ origin: 'http://localhost:3000',
-  credentials: true }));
+const allowedOrigins = process.env.CLIENT_URL;
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, Postman)
+    if (!origin) return callback(null, true);
+
+    if (origin === allowedOrigin) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  optionsSuccessStatus: 200
+}));
+
+// Preflight CORS handling
+app.options('*', cors());
+
+// Trust proxy if behind load balancer/reverse proxy
+// app.set('trust proxy', config.TRUST_PROXY || 1);
+
+// Body parser with size limit
+app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+
+// app.use(cors({ origin: 'http://localhost:3000',
+//   credentials: true }));
 
 // Body parser
 app.use(express.json());
