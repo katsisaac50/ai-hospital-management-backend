@@ -1,7 +1,8 @@
 const User = require('../models/user.model');
 const jwt = require('jsonwebtoken');
 const config = require('../config/env');
-const ErrorResponse = require('../utils/errorResponse')
+const ErrorResponse = require('../utils/errorResponse');
+const asyncHandler = require('../utils/async');
 
 // @desc    Register user
 // @route   POST /api/v1/auth/register
@@ -20,7 +21,7 @@ exports.register = async (req, res, next) => {
     });
 
     // Create token
-    const token = jwt.sign({ id: user._id }, config.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id, role: user.role }, config.JWT_SECRET, {
       expiresIn: config.JWT_EXPIRE,
     });
 
@@ -58,7 +59,6 @@ console.log(user)
     if (!user) {
       return next(new ErrorResponse('Invalid credentials', 401));
     }
-console.log(password)
     // Check if password matches
     const isMatch = await user.matchPassword(password);
 
@@ -67,9 +67,12 @@ console.log(password)
     }
 
     // Create token
-    const token = jwt.sign({ id: user._id }, config.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id,
+        role: user.role }, config.JWT_SECRET, {
       expiresIn: config.JWT_EXPIRE,
     });
+
+    user.password = undefined;
 
     res.status(200).json({
       success: true,
@@ -86,6 +89,43 @@ console.log(password)
     next(err);
   }
 };
+
+// @desc    Update user password
+// @route   PUT /api/v1/auth/updatepassword
+// @access  Private
+exports.updatePassword = asyncHandler(async (req, res, next) => {
+  const { currentPassword, newPassword } = req.body;
+
+  // 1. Get user from database
+  const user = await User.findById(req.user.id).select('+password');
+  
+  if (!user) {
+    return next(new ErrorResponse('User not found', 404));
+  }
+
+  // 2. Check current password
+  if (!(await user.matchPassword(currentPassword))) {
+    return next(new ErrorResponse('Current password is incorrect', 401));
+  }
+
+  // 3. Update password
+  user.password = newPassword;
+  await user.save(); // This will trigger pre-save hook to hash password and set passwordChangedAt
+
+  // 4. Create new token
+  const token = user.getSignedJwtToken();
+
+  res.status(200).json({
+    success: true,
+    token,
+    data: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    }
+  });
+});
 
 // @desc    Get current logged in user
 // @route   GET /api/v1/auth/me

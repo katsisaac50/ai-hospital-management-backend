@@ -6,6 +6,8 @@ const {
   updateBill,
   addPayment,
   getFinancialReports,
+  downloadInvoicePDF,
+  sendInvoiceByEmail,
 } = require('../controllers/financial.controller');
 const { protect, authorize } = require('../middlewares/auth.middleware');
 const advancedResults = require('../utils/advancedResults');
@@ -28,9 +30,17 @@ router.get('/reports', authorize('admin', 'accountant'), getFinancialReports);
 router.post('/bills/:id/payments', authorize('admin', 'accountant'), addPayment);
 
 router
+.route('/bills/:invoiceId/send')
+.post(authorize('admin', 'accountant'), sendInvoiceByEmail);
+
+router
   .route('/bills/:id')
   .get(getBill)
   .put(authorize('admin', 'accountant'), updateBill);
+
+router
+  .route('/bills/:invoiceId/pdf')
+  .get(downloadInvoicePDF);
 
 
 

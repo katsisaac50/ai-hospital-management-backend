@@ -5,6 +5,7 @@ const config = require('../config/env');
 
 // Protect routes
 exports.protect = async (req, res, next) => {
+  // console.log('auth middleware protect called', req.headers);
   let token;
 
   if (
@@ -12,7 +13,7 @@ exports.protect = async (req, res, next) => {
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
-  }
+  } console.log('token', token);
 
   if (!token) {
     return next(new ErrorResponse('Not authorized to access this route', 401));
@@ -22,7 +23,25 @@ exports.protect = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, config.JWT_SECRET);
 
-    req.user = await User.findById(decoded.id);
+    // 3. Get user from database
+    const currentUser = await User.findById(decoded.id).select('+passwordChangedAt');
+    console.log('currentUser', currentUser);
+    if (!currentUser) {
+      return next(new ErrorResponse('User no longer exists', 401));
+    }
+
+    // 4. Check if user changed password after token was issued
+    if (currentUser.changedPasswordAfter(decoded.iat)) {
+      return res.status(401).json({
+        success: false,
+        error: 'User recently changed password. Please log in again.'
+      })
+    }
+
+    // req.user = await User.findById(decoded.id);
+
+    // 5. Grant access
+    req.user = currentUser;
 
     next();
   } catch (err) {

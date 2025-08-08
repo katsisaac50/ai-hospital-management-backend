@@ -20,7 +20,9 @@ router
   .get(advancedResults(Patient), getPatients)
   .post(authorize('admin', 'doctor', 'receptionist'), createPatient);
 
-router.get('/stats', getPatientStats);
+router
+.route('/stats')
+.get(getPatientStats);
 
 router
   .route('/:id')

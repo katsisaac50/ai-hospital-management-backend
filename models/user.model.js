@@ -34,6 +34,7 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
+  passwordChangedAt: Date,
   createdAt: {
     type: Date,
     default: Date.now,
@@ -47,7 +48,26 @@ userSchema.pre('save', async function (next) {
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+
+  // Set passwordChangedAt to current time (minus 1 second to ensure token is created after)
+  if (!this.isNew) {
+    this.passwordChangedAt = Date.now() - 1000;
+  }
+  next();
+
 });
+
+// Method to check if password was changed after token was issued
+userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    return JWTTimestamp < changedTimestamp;
+  }
+  return false;
+};
 
 // Match user entered password to hashed password in database
 userSchema.methods.matchPassword = async function (enteredPassword) {
