@@ -36,11 +36,11 @@ const app = express();
 // Enable CORS
 // app.use(cors({ origin: 'http://localhost:3000',
 //   credentials: true }));
-const allowedOrigin = process.env.CLIENT_URL || 'http://localhost:3000';
-
-const corsOptions = {
+app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (Postman, server-to-server)
+    const allowedOrigin = process.env.CLIENT_URL;
+
+    // Allow requests with no origin (e.g., Postman, server-to-server)
     if (!origin) return callback(null, true);
 
     if (origin === allowedOrigin) {
@@ -49,27 +49,8 @@ const corsOptions = {
       return callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  optionsSuccessStatus: 200
-};
-
-// Enable CORS for all requests
-app.use(cors(corsOptions));
-
-// Handle preflight requests
-app.options('*', cors(corsOptions));
-
-// Force HTTPS in production
-if (config.NODE_ENV === 'production') {
-  app.use((req, res, next) => {
-    if (req.headers['x-forwarded-proto'] !== 'https') {
-      return res.redirect('https://' + req.headers.host + req.url);
-    }
-    next();
-  });
-}
+  credentials: true
+}));
 
 // Body parser
 app.use(express.json());
