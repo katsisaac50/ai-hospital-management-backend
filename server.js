@@ -40,7 +40,9 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps, Postman)
     if (!origin) return callback(null, true);
 
-    if (origin === allowedOrigin) {
+    if (origin === allowedOrigins ||
+        origin === 'http://localhost:3000' || // Local development
+        origin === 'https://ai-hospital-management-client-1zn9h70a9.vercel.app') { // Production client URL
       return callback(null, true);
     } else {
       return callback(new Error('Not allowed by CORS'));
