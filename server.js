@@ -34,38 +34,23 @@ connectDB();
 const app = express();
 
 // Enable CORS
-const allowedOrigins = process.env.CLIENT_URL;
+// app.use(cors({ origin: 'http://localhost:3000',
+//   credentials: true }));
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps, Postman)
+    const allowedOrigin = process.env.CLIENT_URL;
+
+    // Allow requests with no origin (e.g., Postman, server-to-server)
     if (!origin) return callback(null, true);
 
-    if (origin === allowedOrigins ||
-        origin === 'http://localhost:3000' || // Local development
-        origin === 'https://ai-hospital-management-client-1zn9h70a9.vercel.app') { // Production client URL
+    if (origin === allowedOrigin) {
       return callback(null, true);
     } else {
       return callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  optionsSuccessStatus: 200
+  credentials: true
 }));
-
-// Preflight CORS handling
-app.options('*', cors());
-
-// Trust proxy if behind load balancer/reverse proxy
-// app.set('trust proxy', config.TRUST_PROXY || 1);
-
-// Body parser with size limit
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
-
-// app.use(cors({ origin: 'http://localhost:3000',
-//   credentials: true }));
 
 // Body parser
 app.use(express.json());
