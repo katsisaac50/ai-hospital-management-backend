@@ -1,4 +1,4 @@
-const StockOrder = require('../models/StockOrder.model')
+const StockOrder = require('../models/stockOrder.model')
 const ErrorResponse = require('../utils/errorResponse')
 const asyncHandler = require('../utils/async')
 
