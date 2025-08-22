@@ -121,6 +121,7 @@ patientSchema.virtual('fullName').get(function () {
 
 patientSchema.index({ isActive: 1 });
 patientSchema.index({ status: 1 });
+patientSchema.index({ name: 'text' });
 
 patientSchema.methods.getFullAddress = function () {
   const { street, city, state, postalCode, country } = this.address || {};

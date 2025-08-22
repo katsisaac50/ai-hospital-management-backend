@@ -16,7 +16,7 @@ const generateInvoicePDF = async (invoice, outputPath) => {
     doc.fontSize(12).text(`Invoice Number: ${invoice.invoiceNumber}`);
     doc.text(`Date: ${new Date(invoice.date).toLocaleDateString()}`);
     doc.text(`Due Date: ${new Date(invoice.dueDate).toLocaleDateString()}`);
-    doc.text(`Patient ID: ${invoice.patient.patientId}`);
+    doc.text(`Patient ID: ${invoice.patient.medicalRecordNumber}`);
     doc.text(`Patient Name: ${invoice.patient.name}`);
     doc.moveDown();
 

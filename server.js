@@ -10,7 +10,8 @@ const hpp = require('hpp');
 const cors = require('cors');
 const mongoSanitize = require('express-mongo-sanitize');
 const errorHandler = require('./middlewares/error.middleware');
-const { startORAutoReleaseCron, cleaningToAvailableCron } = require("./cron/cronOR");
+const { startORAutoReleaseCron, cleaningToAvailableCron, paymentReconciliationCron
+ } = require("./cron/cronOR");
 
 // Route files
 
@@ -26,6 +27,9 @@ const stockOrderRoutes = require('./routes/stockOrder.routes')
 const interactionRoutes = require('./routes/interactions.routes');
 const dispenseRoutes = require('./routes/dispense.routes');
 const servicesRoutes = require('./routes/services.routes');
+const testOptionsRouter = require("./routes/testOptions.routes");
+const payments = require('./routes/payments.routes');
+
 
 // Connect to database
 connectDB();
@@ -116,6 +120,8 @@ app.use('/api/v1/interactions', interactionRoutes);
 app.use('/api', dashboardRoutes);
 app.use('/api/v1/dispenselog', dispenseRoutes);
 app.use('/api/v1/services', servicesRoutes);
+app.use("/api/v1/test-options", testOptionsRouter);
+app.use('/api/v1/payments', payments);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -143,6 +149,7 @@ app.use(errorHandler);
 
 startORAutoReleaseCron();
 cleaningToAvailableCron();
+paymentReconciliationCron();
 
 const PORT = config.PORT || 5000;
 

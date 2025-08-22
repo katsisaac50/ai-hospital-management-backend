@@ -49,6 +49,11 @@ class APIFeatures {
 
     return this;
   }
+
+  enableGetters() {
+    this.query = this.query.setOptions({ getters: true });
+    return this;
+  }
 }
 
 const advancedResults = (model, populate) => async (req, res, next) => {
@@ -58,7 +63,8 @@ const advancedResults = (model, populate) => async (req, res, next) => {
       .filter()
       .sort()
       .limitFields()
-      .paginate();
+      .paginate()
+      .enableGetters();
 
     if (populate) {
       if (Array.isArray(populate)) {
