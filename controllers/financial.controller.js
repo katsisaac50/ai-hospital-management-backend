@@ -1,5 +1,5 @@
 const Billing = require('../models/billing.model');
-const ErrorResponse = require('../utils/ErrorResponse');
+const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../utils/async');
 const currencyUtils = require('../utils/currency.utils');
 const generateInvoicePDF = require("../utils/generateInvoicePDF");
