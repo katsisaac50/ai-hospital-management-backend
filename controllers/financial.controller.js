@@ -34,7 +34,7 @@ exports.getBills = asyncHandler(async (req, res, next) => {
       }))
     };
   });
-  // console.log("Bills with getters applied:", bills);
+ 
   // res.advancedResults = await Billing.find()
   //   .populate('patient', 'firstName lastName phone')
   //   .populate('createdBy', 'name email')
