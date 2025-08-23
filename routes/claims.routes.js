@@ -11,7 +11,7 @@ const {
 
 const router = express.Router();
 
-const { protect, authorize } = require('../middlewareS/auth.middleware');
+const { protect, authorize } = require('../middlewares/auth.middleware');
 
 router
   .route('/')
