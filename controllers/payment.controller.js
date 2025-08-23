@@ -1,5 +1,5 @@
 const asyncHandler = require('../utils/async');
-const ErrorResponse = require('../utils/ErrorResponse');
+const ErrorResponse = require('../utils/errorResponse');
 const Payment = require('../models/payment.model');
 const Patient = require('../models/patient.model');
 const Billing = require('../models/billing.model');
