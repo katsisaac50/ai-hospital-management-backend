@@ -29,6 +29,7 @@ const dispenseRoutes = require('./routes/dispense.routes');
 const servicesRoutes = require('./routes/services.routes');
 const testOptionsRouter = require("./routes/testOptions.routes");
 const payments = require('./routes/payments.routes');
+const claims = require('./routes/claims.routes');
 
 
 // Connect to database
@@ -122,6 +123,7 @@ app.use('/api/v1/dispenselog', dispenseRoutes);
 app.use('/api/v1/services', servicesRoutes);
 app.use("/api/v1/test-options", testOptionsRouter);
 app.use('/api/v1/payments', payments);
+app.use('/api/v1/claims', claims);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

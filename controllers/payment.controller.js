@@ -77,7 +77,7 @@ exports.getPayments = asyncHandler(async (req, res, next) => {
 
   // Executing query
   const payments = await query;
-console.log('payments', payments)
+
   // If getters still don't work, use manual conversion:
   // const formattedPayments = payments.map(payment => ({
   //   ...payment.toObject(),
@@ -109,6 +109,8 @@ console.log('payments', payments)
       limit
     };
   }
+
+  console.log('payments', formattedPayments)
 
   res.status(200).json({
     success: true,

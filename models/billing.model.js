@@ -369,6 +369,14 @@ billingSchema.virtual('paidAmount').get(function() {
   return currencyUtils.fromStorageFormat(paidStorage, this.currency);
 });
 
+// Virtual for claim reference
+billingSchema.virtual('claim', {
+  ref: 'Claim',
+  localField: '_id',
+  foreignField: 'billing',
+  justOne: true
+});
+
 // Query helpers
 billingSchema.query.byStatus = function(status) {
   return this.where({ status });
