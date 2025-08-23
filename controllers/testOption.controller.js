@@ -1,4 +1,4 @@
-const TestOption = require("../models/testOption.model");
+const TestOption = require("../models/TestOption.model");
 
 exports.getTestOptions = async (req, res, next) => {
   try {
