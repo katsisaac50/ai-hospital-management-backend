@@ -1,51 +1,62 @@
 const express = require('express');
+const router = express.Router();
 const {
   getBills,
   getBill,
+  getUnpaidBillings,
   createBill,
   updateBill,
   addPayment,
   getFinancialReports,
   downloadInvoicePDF,
   sendInvoiceByEmail,
-  getUnpaidBillings,
-  createPaymentIntent,
+  getBillPayments,
+  updateBillStatus,
+  getBillingOverview,
+  checkInvoiceStatus,
 } = require('../controllers/financial.controller');
+
 const { protect, authorize } = require('../middlewares/auth.middleware');
-const advancedResults = require('../utils/advancedResults');
-const Billing = require('../models/billing.model');
 
-const router = express.Router();
-
+// All routes are protected
 router.use(protect);
 
+// Admin and finance roles can access all routes
+const adminFinance = authorize('admin', 'finance');
+const adminFinanceReceptionist = authorize('admin', 'finance', 'receptionist');
+
+router.route('/bills')
+  .get(adminFinanceReceptionist, getBills)
+  .post(adminFinance, createBill);
+
+router.route('/unpaid')
+  .get(adminFinanceReceptionist, getUnpaidBillings);
+
+router.route('/stats/overview')
+  .get(adminFinance, getBillingOverview);
+
+router.route('/:id')
+  .get(adminFinanceReceptionist, getBill)
+  .put(adminFinance, updateBill);
+
+router.route('/:id/payments')
+  .get(adminFinanceReceptionist, getBillPayments)
+  .post(adminFinance, addPayment);
+
+router.route('/:id/status')
+  .patch(adminFinance, updateBillStatus);
+
+router.route('/:id/pdf')
+  .get(adminFinanceReceptionist, downloadInvoicePDF);
+
+router.route('/:id/send')
+  .post(adminFinanceReceptionist, sendInvoiceByEmail);
+
+router.route('/reports/financial')
+  .get(adminFinance, getFinancialReports);
+
 router
-  .route('/bills')
-  .get(
-    advancedResults(Billing, { path: 'patient', select: 'firstName lastName name medicalRecordNumber' }),
-    getBills
-  )
-  .post(authorize('admin', 'accountant'), createBill);
-
-router.get('/reports', authorize('admin', 'accountant'), getFinancialReports);
-router.get('/unpaid', protect, authorize('admin', 'staff'), getUnpaidBillings);
-
-router.post('/bills/:id/payments', authorize('admin', 'accountant'), addPayment);
-router.post('/bills/:id/payments/intent', authorize('admin', 'accountant'), createPaymentIntent);
-
-router
-.route('/bills/:invoiceId/send')
-.post(authorize('admin', 'accountant'), sendInvoiceByEmail);
-
-router
-  .route('/bills/:id')
-  .get(getBill)
-  .put(authorize('admin', 'accountant'), updateBill);
-
-router
-  .route('/bills/:invoiceId/pdf')
-  .get(downloadInvoicePDF);
-
-
+  .route('/bills/prescription/:prescriptionId')
+  .get(authorize('admin', 'pharmacist'), checkInvoiceStatus)
 
 module.exports = router;

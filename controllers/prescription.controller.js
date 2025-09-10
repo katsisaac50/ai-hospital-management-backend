@@ -5,6 +5,7 @@ const StockLog = require('../models/stockLog.model'); // hypothetical
 const DispenseLog = require('../models/dispenseLog.model'); // hypothetical
 const StockOrder = require('../models/stockOrder.model'); // hypothetical
 const Medication = require('../models/medication.model');
+const Invoice = require('../models/billing.model');
 const estimateQuantity = require('../utils/calculateQuantity')
 const moment = require('moment');
 
@@ -81,6 +82,30 @@ console.log("Prescription activities:", activities);
   } catch (error) {
     console.error("Failed to load pharmacy activities:", error.message);
   res.status(500).json({ message: "Failed to load pharmacy activities", error: error.message });
+  }
+});
+
+// @desc    Get prescriptions for billing by patient ID
+// @route   PUT /api/v1/pharmacy/prescriptions/patient/:patientId
+// @access  Private
+exports.billingPrescription = asyncHandler(async (req, res) => {
+  console.log('ere biling prescription', req.body)
+  try {
+    const { patientId } = req.params;
+    
+    const prescriptions = await Prescription.find({ patientId })
+      .populate('medications.medication', 'name strength form')
+      .sort({ createdAt: -1 });
+    
+    res.status(200).json({
+      success: true,
+      data: prescriptions
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error fetching prescriptions'
+    });
   }
 });
 
@@ -199,38 +224,56 @@ exports.processPrescription = asyncHandler(async(req, res, next) => {
   }
 })
 
-exports.dispensePrescription = asyncHandler(async(req, res, next) => {
-   const { id } = req.params
-   const {status} = req.body
-  console.log('dispenses id', id);
-// console.log('ppro', req)
+exports.dispensePrescription = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const { status } = req.body;
+  
   if (req.method !== 'PUT') {
     return res.status(405).json({ message: 'Method not allowed' });
   }
 
   try {
-
     // Find the prescription by id
     const prescription = await Prescription.findById(id);
     if (!prescription) {
       return res.status(404).json({ message: 'Prescription not found' });
     }
 
-    // Only process if status is 'Pending'
+    console.log('prescription controller', prescription)
+
+    // Only process if status is 'Ready'
     if (prescription.status !== 'Ready') {
-      return res.status(400).json({ message: 'Prescription is not pending' });
+      return res.status(400).json({ message: 'Prescription is not ready for dispensing' });
     }
 
-    // Update status to 'Processed' (or whatever you want)
+    // Check if there's an invoice and if it's paid
+    const invoice = await Invoice.findOne({ prescriptionId: id });
+    if (!invoice) {
+      return res.status(400).json({ message: 'No invoice found for this prescription' });
+    }
+    
+    if (invoice.paymentStatus !== 'paid') {
+      return res.status(400).json({ message: 'Invoice not paid. Cannot dispense medication.' });
+    }
+
+    // Update status to 'Dispensed'
     prescription.status = status;
     await prescription.save();
+
+    // Record dispensing activity
+    await DispenseLog.create({
+      prescription: id,
+      patient: prescription.patient,
+      dispensedBy: req.user.id, // assuming user info is in request
+      dispensedAt: new Date()
+    });
 
     res.status(200).json({ message: 'Prescription dispensed successfully', prescription });
   } catch (error) {
     console.error('Error dispensing prescription:', error);
     res.status(500).json({ message: 'Server error' });
   }
-})
+});
 
 exports.deletePrescription = asyncHandler(async(req, res, next) =>{
   

@@ -20,7 +20,8 @@ const {
   updatePrescription,
   deletePrescription,
   processPrescription,
-  dispensePrescription
+  dispensePrescription,
+  billingPrescription,
 } = require('../controllers/prescription.controller');
 const { protect, authorize } = require('../middlewares/auth.middleware');
 const advancedResults = require('../utils/advancedResults');
@@ -75,5 +76,9 @@ router
 router
   .route('/prescriptions/dispense/:id')
   .put(authorize('admin', 'pharmacist'), dispensePrescription)
+
+router
+  .route('/prescriptions/patient/:id')
+  .get(authorize('admin', 'pharmacist'), billingPrescription)
 
 module.exports = router;

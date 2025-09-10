@@ -19,19 +19,17 @@ const DispenseLogSchema = new Schema(
         instructions: String,
       },
     ],
-
     dispensedBy: {
       type: Schema.Types.ObjectId,
       ref: 'User', // Assuming your pharmacy staff are users
       required: true,
     },
-
     method: {
       type: String,
       enum: ['dispensed', 'delivered', 'pickup'],
       default: 'dispensed',
     },
-
+    dispensedAt: { type: Date, default: Date.now },
     notes: String,
   },
   { timestamps: true }

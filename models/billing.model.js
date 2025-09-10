@@ -8,6 +8,11 @@ const billingSchema = new mongoose.Schema({
     ref: 'Patient',
     required: [true, 'Patient reference is required']
   },
+  prescriptionId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'Prescription', 
+    required: false 
+  },
   invoiceNumber: {
     type: String,
     required: [true, 'Invoice number is required'],
@@ -128,31 +133,44 @@ const billingSchema = new mongoose.Schema({
     default: 'draft'
   },
   payments: [
-    {
-      amount: {
-        type: Number,
-        required: true,
-        min: 0.01,
-        set: function(v) {
-          return currencyUtils.toStorageFormat(v, this.parent().currency);
-        },
-        get: function(v) {
-          return currencyUtils.fromStorageFormat(v, this.parent().currency);
-        }
+  {
+    amount: {
+      type: Number,
+      required: true,
+      min: 0.01,
+      set: function(v) {
+        return currencyUtils.toStorageFormat(v, this.parent().currency);
       },
-      method: {
-        type: String,
-        enum: ['cash', 'card', 'insurance', 'bank-transfer', 'check', 'stripe', 'other'],
-        required: true
-      },
-      date: {
-        type: Date,
-        default: Date.now
-      },
-      transactionId: String,
-      notes: String
-    }
-  ],
+      get: function(v) {
+        return currencyUtils.fromStorageFormat(v, this.parent().currency);
+      }
+    },
+    method: {
+      type: String,
+      enum: [
+        'card', 'cash', 'bank_transfer', 'insurance', 'check', 
+        'stripe', 'mobilepay', 'applepay', 'googlepay',
+        'mpesa', 'airtel', 'orange', 'mtn' // Mobile money providers
+      ],
+      required: true
+    },
+    date: {
+      type: Date,
+      default: Date.now
+    },
+    transactionId: String,
+    providerData: { // Add provider-specific data
+      provider: String,
+      paymentIntentId: String,
+      phoneNumber: String,
+      checkoutRequestId: String,
+      receiptNumber: String,
+      reference: String,
+      rawResponse: mongoose.Schema.Types.Mixed
+    },
+    notes: String
+  }
+],
   insurance: {
     type: String,
     maxlength: [100, 'Insurance name cannot exceed 100 characters']
@@ -396,7 +414,7 @@ billingSchema.index({ date: -1 });
 billingSchema.index({ dueDate: 1 });
 billingSchema.index({ paymentStatus: 1 });
 billingSchema.index({ status: 1 });
-billingSchema.index({ invoiceNumber: 1 }, { unique: true });
+// billingSchema.index({ invoiceNumber: 1 }, { unique: true });
 
 const Billing = mongoose.model('Billing', billingSchema);
 
