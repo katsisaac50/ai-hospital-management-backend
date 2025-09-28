@@ -6,6 +6,11 @@ const prescriptionSchema = new Schema({
     ref: 'Patient',
     required: true,
   },
+  encounter: {
+    type: Types.ObjectId,
+    ref: 'Encounter', // ✅ link to a specific encounter
+    required: false, // keep optional for backward compatibility
+  },
   doctor: {
     type: Types.ObjectId,
     ref: 'Doctor',

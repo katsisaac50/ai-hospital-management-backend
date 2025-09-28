@@ -7,6 +7,7 @@ const medicalHistorySchema = new mongoose.Schema({
   notes: { type: String },
 });
 
+
 const patientSchema = new mongoose.Schema({
   name: {
     type: String,

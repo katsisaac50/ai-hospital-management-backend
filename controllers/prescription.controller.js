@@ -6,6 +6,7 @@ const DispenseLog = require('../models/dispenseLog.model'); // hypothetical
 const StockOrder = require('../models/stockOrder.model'); // hypothetical
 const Medication = require('../models/medication.model');
 const Invoice = require('../models/billing.model');
+const { createPrescription } = require('../services/prescriptionService');
 const estimateQuantity = require('../utils/calculateQuantity')
 const moment = require('moment');
 
@@ -113,7 +114,7 @@ exports.billingPrescription = asyncHandler(async (req, res) => {
 // @route   POST /api/v1/pharmacy/prescriptions
 // @access  Private
 exports.createPrescription = asyncHandler(async (req, res) => {
-  const { patient, doctor, medications, notes, status, priority, insurance, copay } = req.body;
+  const { patient: patientId, doctor: doctorId, medications, notes, status, priority, insurance, copay } = req.body;
 
 
   if (!Array.isArray(medications) || medications.length === 0) {
@@ -159,18 +160,34 @@ exports.createPrescription = asyncHandler(async (req, res) => {
     });
   }
 
-  const prescription = await Prescription.create({
-    patient,
-    doctor,
+  // const prescription = await Prescription.create({
+  //   patient,
+  //   doctor,
+  //   medications: medicationEntries,
+  //   totalCost,
+  //   // copay: totalCost * 0.1, // optional
+  //   notes,
+  //   status,
+  //   priority,
+  //   insurance,
+  //   copay,
+  // });
+
+  // ✅ Use service method instead of Prescription.create
+  const prescription = await createPrescription({
+    patientId,
+    doctorId,
     medications: medicationEntries,
-    totalCost,
-    // copay: totalCost * 0.1, // optional
     notes,
-    status,
-    priority,
-    insurance,
-    copay,
   });
+
+  // update optional fields after creation
+  if (status) prescription.status = status;
+  if (priority) prescription.priority = priority;
+  if (insurance) prescription.insurance = insurance;
+  if (copay) prescription.copay = copay;
+  prescription.totalCost = totalCost;
+  await prescription.save();
 
   res.status(201).json({ success: true, data: prescription });
 });
